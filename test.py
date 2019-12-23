@@ -1,6 +1,6 @@
 from json import dumps
 
-from Debugger.main import trace, tracelevel
+from Debugger.trace import trace, tracelevel
 from tets2 import i_will_return_smt
 
 

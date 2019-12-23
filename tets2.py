@@ -1,6 +1,6 @@
 from typing import Any
 
-from Debugger.main import trace, tracelevel
+from Debugger.trace import trace, tracelevel
 
 
 @trace(level=tracelevel.ALL, packages="json")

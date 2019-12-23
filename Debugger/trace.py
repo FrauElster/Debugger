@@ -19,12 +19,18 @@ class TraceRecord:
     keyword_arguments: Dict[str, Any]
 
 
+class TracePersistor:
+    def persist(self, records: List[TraceRecord]):
+        pass
+
+
 class trace:
-    def __init__(self, level: tracelevel = tracelevel.ALL, packages: Union[str, list] = None, file_name: str = None):
-        self.file_name = file_name
+    def __init__(self, level: tracelevel = tracelevel.ALL, packages: Union[str, list] = None,
+                 persistor: TracePersistor = None):
         self.level = level
         self.packages: List[str] = ["__main__"]
-        self.records = []
+        self.persistor = persistor
+        self.records: List[TraceRecord] = []
 
         if isinstance(packages, str):
             self.packages.append(packages)
@@ -34,11 +40,6 @@ class trace:
     def __call__(self, func: Callable, *args, **kwargs):
         @functools.wraps(func)
         def wrapper_func(*args, **kwargs):
-            # members = dict(inspect.getmembers(func))
-            # annotations: List[str] = members["__annotations__"]
-            # func_name: str = members["__code__"].co_name
-            # functions: Tuple[str] = members["__code__"].co_names
-
             objects_to_patch = self._get_objects_to_patch()
             self._patch_objects(objects_to_patch)
 
@@ -96,5 +97,4 @@ class trace:
         return result
 
     def _persist_trace_results(self):
-        for record in self.records:
-            print(record)
+        self.persistor.persist(self.records)
