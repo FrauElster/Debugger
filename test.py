@@ -1,10 +1,10 @@
 from json import dumps
 
-from Debugger.trace import trace, tracelevel
+from Debugger.trace import trace, TraceLevel
 from tets2 import i_will_return_smt
 
 
-@trace(level=tracelevel.ALL, packages="json")
+@trace(level=TraceLevel.ALL, packages="json")
 def test_me():
     print("I will add 1 + 1")
     x = sum([1, 1])

@@ -6,7 +6,7 @@ from enum import Enum, auto
 from typing import Union, Callable, List, Tuple, Any, Dict
 
 
-class tracelevel(Enum):
+class TraceLevel(Enum):
     MINIMAL = auto()
     SOME = auto()
     ALL = auto()
@@ -25,7 +25,7 @@ class TracePersistor:
 
 
 class trace:
-    def __init__(self, level: tracelevel = tracelevel.ALL, packages: Union[str, list] = None,
+    def __init__(self, level: TraceLevel = TraceLevel.ALL, packages: Union[str, list] = None,
                  persistor: TracePersistor = None):
         self.level = level
         self.module_names: List[str] = []
