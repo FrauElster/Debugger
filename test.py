@@ -1,12 +1,10 @@
-from typing import Any
-
 from json import dumps
 
 from Debugger.main import trace, tracelevel
 from tets2 import i_will_return_smt
 
 
-@trace(tracelevel=tracelevel.ALL, packages="json")
+@trace(level=tracelevel.ALL, packages="json")
 def test_me():
     print("I will add 1 + 1")
     x = sum([1, 1])
@@ -24,4 +22,5 @@ class Harald:
 
 if __name__ == '__main__':
     test_me()
+    i_will_return_smt(2)
     dumps({"diff": 5})

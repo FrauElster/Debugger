@@ -1,8 +1,9 @@
 import functools
 import inspect
 import sys
+from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Union, Callable, List, Tuple, Any, Set
+from typing import Union, Callable, List, Tuple, Any, Dict
 
 
 class tracelevel(Enum):
@@ -11,9 +12,19 @@ class tracelevel(Enum):
     ALL = auto()
 
 
+@dataclass
+class TraceRecord:
+    function_name: str
+    arguments: Tuple[Any]
+    keyword_arguments: Dict[str, Any]
+
+
 class trace:
-    def __init__(self, tracelevel: tracelevel = tracelevel.ALL, packages: Union[str, list] = None):
+    def __init__(self, level: tracelevel = tracelevel.ALL, packages: Union[str, list] = None, file_name: str = None):
+        self.file_name = file_name
+        self.level = level
         self.packages: List[str] = ["__main__"]
+        self.records = []
 
         if isinstance(packages, str):
             self.packages.append(packages)
@@ -31,10 +42,12 @@ class trace:
             objects_to_patch = self._get_objects_to_patch()
             self._patch_objects(objects_to_patch)
 
+            record = TraceRecord(func.__name__, args, kwargs)
+            self.records.append(record)
             result = func(*args, **kwargs)
 
             self._unpatch_objects(objects_to_patch)
-
+            self._persist_trace_results()
             return result
 
         return wrapper_func
@@ -49,7 +62,8 @@ class trace:
     def _patch_function(self, func: Any, module: Any):
         @functools.wraps(func)
         def patched_function(*args, **kwargs):
-            print(f'{func.__name__}: {", ".join(map(str, args))} {", ".join(kwargs)}')
+            record = TraceRecord(func.__name__, args, kwargs)
+            self.records.append(record)
             return func(*args, **kwargs)
 
         setattr(module, func.__name__, patched_function)
@@ -80,3 +94,7 @@ class trace:
                 if module_name in self.packages:
                     result.append((modules[importing_module_name], member))
         return result
+
+    def _persist_trace_results(self):
+        for record in self.records:
+            print(record)
