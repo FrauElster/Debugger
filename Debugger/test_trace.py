@@ -65,3 +65,31 @@ def test_records_keyword_arguments():
     assert "arg" in r.keyword_arguments
     kwa = r.keyword_arguments["arg"]
     assert kwa == "Test"
+
+
+def my_method():
+    pass
+
+
+def test_records_transitive_method_calls():
+    p = MockPersistor()
+
+    @trace(persistor=p)
+    def method():
+        my_method()
+
+    method()
+
+    assert len(p.records) == 2
+
+    r = p.records[0]
+    assert r is not None
+    assert r.function_name == "method"
+    assert len(r.arguments) == 0
+    assert len(r.keyword_arguments) == 0
+
+    r = p.records[1]
+    assert r is not None
+    assert r.function_name == "my_method"
+    assert len(r.arguments) == 0
+    assert len(r.keyword_arguments) == 0

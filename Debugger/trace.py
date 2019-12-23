@@ -28,16 +28,20 @@ class trace:
     def __init__(self, level: tracelevel = tracelevel.ALL, packages: Union[str, list] = None,
                  persistor: TracePersistor = None):
         self.level = level
-        self.packages: List[str] = ["__main__"]
+        self.module_names: List[str] = []
         self.persistor = persistor
         self.records: List[TraceRecord] = []
 
         if isinstance(packages, str):
-            self.packages.append(packages)
+            self.module_names.append(packages)
         if isinstance(packages, list):
-            self.packages.extend(packages)
+            self.module_names.extend(packages)
 
     def __call__(self, func: Callable, *args, **kwargs):
+        # add the module where the function is defined in
+        function_module = inspect.getmodule(func)
+        self.module_names.append(function_module.__name__)
+
         @functools.wraps(func)
         def wrapper_func(*args, **kwargs):
             objects_to_patch = self._get_objects_to_patch()
@@ -80,7 +84,7 @@ class trace:
         setattr(module, func.__name__, func)
 
     def _get_objects_to_patch(self) -> List[Tuple[Any, Any]]:
-        modules = {mod: val for mod, val in sys.modules.items() if mod in self.packages}
+        modules = {mod: val for mod, val in sys.modules.items() if mod in self.module_names}
         result: List[Tuple[Any, Any]] = []
         for importing_module_name in modules:
             mod_insp = {name: member for name, member in inspect.getmembers(modules[importing_module_name]) if
@@ -92,7 +96,7 @@ class trace:
                     continue
 
                 module_name: str = member_data["__module__"]
-                if module_name in self.packages:
+                if module_name in self.module_names:
                     result.append((modules[importing_module_name], member))
         return result
 
