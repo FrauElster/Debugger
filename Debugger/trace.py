@@ -1,35 +1,17 @@
 import functools
 import inspect
 import sys
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Union, Callable, List, Tuple, Any, Dict
-
-
-class TraceLevel(Enum):
-    MINIMAL = auto()
-    SOME = auto()
-    ALL = auto()
-
-
-@dataclass
-class TraceRecord:
-    function_name: str
-    arguments: Tuple[Any]
-    keyword_arguments: Dict[str, Any]
-
-
-class TracePersistor:
-    def persist(self, records: List[TraceRecord]):
-        pass
+from typing import Union, Callable, List, Tuple, Any
+from .types import TraceLevel, TraceRecord
+from .export import TraceExporter
 
 
 class trace:
     def __init__(self, level: TraceLevel = TraceLevel.ALL, packages: Union[str, list] = None,
-                 persistor: TracePersistor = None):
+                 exporter: TraceExporter = None):
         self.level = level
         self.module_names: List[str] = []
-        self.persistor = persistor
+        self.exporter = exporter
         self.records: List[TraceRecord] = []
 
         if isinstance(packages, str):
@@ -101,4 +83,6 @@ class trace:
         return result
 
     def _persist_trace_results(self):
-        self.persistor.persist(self.records)
+        if self.exporter is None:
+            return
+        self.exporter.persist(self.records)
