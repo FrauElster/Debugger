@@ -15,7 +15,8 @@ class TraceExporter:
 class ChromeJsonExporter(TraceExporter):
     """
     Exports a recorded trace to json that Google Chromes tracing tool can read.
-    The json format is described here: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit#
+    The json format is described here:
+    https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit#
     """
 
     def __init__(self, file_name):

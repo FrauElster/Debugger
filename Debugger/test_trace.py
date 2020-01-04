@@ -148,7 +148,13 @@ def test_records_transitive_method_calls_with_arguments():
 
 def test_records_start_and_end_times():
     p = MockExporter()
-    t = MockTimeProvider([datetime(2020, 1, 1), datetime(2020, 1, 2), datetime(2020, 1, 3), datetime(2020, 1, 4)])
+    time_stamps = [
+        datetime(2020, 1, 1),
+        datetime(2020, 1, 2),
+        datetime(2020, 1, 3),
+        datetime(2020, 1, 4)
+    ]
+    t = MockTimeProvider(time_stamps)
 
     @trace(exporter=p, time_provider=t)
     def method():
