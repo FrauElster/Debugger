@@ -1,9 +1,9 @@
 from typing import List
 
-from Debugger.trace import trace, TracePersistor, TraceRecord
+from Debugger.trace import trace, TraceExporter, TraceRecord
 
 
-class MockPersistor(TracePersistor):
+class MockExporter(TraceExporter):
     def __init__(self):
         self.records: List[TraceRecord] = []
 
@@ -12,9 +12,9 @@ class MockPersistor(TracePersistor):
 
 
 def test_records_method_call():
-    p = MockPersistor()
+    p = MockExporter()
 
-    @trace(persistor=p)
+    @trace(exporter=p)
     def method():
         pass
 
@@ -29,9 +29,9 @@ def test_records_method_call():
 
 
 def test_records_arguments():
-    p = MockPersistor()
+    p = MockExporter()
 
-    @trace(persistor=p)
+    @trace(exporter=p)
     def method(arg):
         pass
 
@@ -48,9 +48,9 @@ def test_records_arguments():
 
 
 def test_records_keyword_arguments():
-    p = MockPersistor()
+    p = MockExporter()
 
-    @trace(persistor=p)
+    @trace(exporter=p)
     def method(arg):
         pass
 
@@ -72,9 +72,9 @@ def my_method():
 
 
 def test_records_transitive_method_calls():
-    p = MockPersistor()
+    p = MockExporter()
 
-    @trace(persistor=p)
+    @trace(exporter=p)
     def method():
         my_method()
 
@@ -100,9 +100,9 @@ def my_arg_method(arg, kwarg=None):
 
 
 def test_records_transitive_method_calls_with_arguments():
-    p = MockPersistor()
+    p = MockExporter()
 
-    @trace(persistor=p)
+    @trace(exporter=p)
     def method():
         my_arg_method("Test", kwarg="Hello")
 

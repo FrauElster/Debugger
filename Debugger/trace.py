@@ -1,6 +1,9 @@
 import functools
 import inspect
 import sys
+from typing import Union, Callable, List, Tuple, Any
+from .types import TraceLevel, TraceRecord
+from .export import TraceExporter
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Union, Callable, List, Tuple, Any, Dict
@@ -26,6 +29,7 @@ class TracePersistor:
     """
     Collects all informations and does shit with it
     """
+
     def persist(self, records: List[TraceRecord]):
         pass
 
@@ -34,11 +38,12 @@ class trace:
     """
     The actual decorator class
     """
+
     def __init__(self, level: TraceLevel = TraceLevel.ALL, packages: Union[str, list] = None,
-                 persistor: TracePersistor = None):
+                 exporter: TraceExporter = None):
         self.level = level
         self.module_names: List[str] = []
-        self.persistor = persistor
+        self.exporter = exporter
         self.records: List[TraceRecord] = []
 
         if isinstance(packages, str):
@@ -92,6 +97,7 @@ class trace:
         :param module: the module the function is implemented in
         :return: None
         """
+
         @functools.wraps(func)
         def patched_function(*args, **kwargs):
             record = TraceRecord(func.__name__, args, kwargs)
@@ -143,9 +149,11 @@ class trace:
                     result.append((modules[importing_module_name], member))
         return result
 
-    def _persist_trace_results(self) -> None:
+    def _persist_trace_results(self):
         """
         Calls the callback of persistor
-        :return:
+        :return: None
         """
-        self.persistor.persist(self.records)
+        if self.exporter is None:
+            return
+        self.exporter.persist(self.records)
