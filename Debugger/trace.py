@@ -60,9 +60,9 @@ class trace:
     def _call_function(self, func: Any, args, kwargs):
         """
         Calls a given function and wraps it within a trace record
-        :param func:
-        :param args:
-        :param kwargs:
+        :param func: the function to call
+        :param args:the args of the function
+        :param kwargs:the kwargs of the function
         :return:
         """
         start_time = self.time_provider.get_current_time()
@@ -83,10 +83,7 @@ class trace:
         :return: None
         """
         for module, obj in objects:
-            if inspect.isclass(obj):
-                continue
-            if inspect.isfunction(obj):
-                self._patch_function(func=obj, module=module)
+            self._patch_function(func=obj, module=module)
 
     def _patch_function(self, func: Any, module: Any) -> None:
         """
@@ -109,12 +106,10 @@ class trace:
         :return: None
         """
         for module, obj in objects:
-            if inspect.isclass(obj):
-                continue
-            if inspect.isfunction(obj):
-                self._unpatch_function(obj, module)
+            self._unpatch_function(obj, module)
 
-    def _unpatch_function(self, func, module) -> None:
+    @staticmethod
+    def _unpatch_function(func, module) -> None:
         """
         sets a function back to its original behaviour
         :param func: the function to unpatch
@@ -142,7 +137,13 @@ class trace:
 
                 module_name: str = member_data["__module__"]
                 if module_name in self.module_names:
-                    result.append((modules[importing_module_name], member))
+                    if inspect.isclass(member):
+                        filter_out_inbuilt_functions: Callable = lambda class_function_tuple: not class_function_tuple[0].startswith("__")
+                        for function_tuple in filter(filter_out_inbuilt_functions, inspect.getmembers(member)):
+                            result.append((modules[importing_module_name], function_tuple[1]))
+                    else:
+                        result.append((modules[importing_module_name], member))
+
         return result
 
     def _persist_trace_results(self):
