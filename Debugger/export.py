@@ -28,22 +28,28 @@ class ChromeJsonExporter(TraceExporter):
         lines = ["[\n"]
         for record in records:
             time_stamp = record.start_time - begin_time
-            time_stamp_micros = time_stamp.total_seconds() / 1_000_000
+            time_stamp_micros = time_stamp.total_seconds() * 1_000_000
             if record.end_time is None:
                 duration_micros = 0.0
             else:
                 duration = record.end_time - record.start_time
-                duration_micros = duration.total_seconds() / 1_000_000
+                duration_micros = duration.total_seconds() * 1_000_000
             line = "{"
             line += f"\"name\": \"{record.function_name}\","
-            line += f" \"cat\": \"PERF\","
+            line += f" \"cat\": \"abc\","
             line += f" \"ph\": \"X\","
             line += f" \"pid\": 0,"
             line += f" \"tid\": 0,"
-            line += f" \"ts\": {time_stamp_micros}"
+            line += f" \"ts\": {time_stamp_micros},"
             line += f" \"dur\": {duration_micros}"
-            line += "}\n"
+            line += "},\n"
             lines.append(line)
+
+        if len(lines) > 1:
+            # removing trailing comma after last element (to make it valid json)
+            line = lines[-1]
+            new_line = line[:-2] + "\n"
+            lines[-1] = new_line
 
         lines.append("]\n")
 
