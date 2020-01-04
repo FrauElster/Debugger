@@ -29,8 +29,11 @@ class ChromeJsonExporter(TraceExporter):
         for record in records:
             time_stamp = record.start_time - begin_time
             time_stamp_micros = time_stamp.total_seconds() / 1_000_000
-            duration = record.end_time - record.start_time
-            duration_micros = duration.total_seconds() / 1_000_000
+            if record.end_time is None:
+                duration_micros = 0.0
+            else:
+                duration = record.end_time - record.start_time
+                duration_micros = duration.total_seconds() / 1_000_000
             line = "{"
             line += f"\"name\": \"{record.function_name}\","
             line += f" \"cat\": \"PERF\","

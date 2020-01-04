@@ -1,7 +1,7 @@
 import logging
 import os
 
-from Debugger.Filenames import FILENAMES
+from Debugger.filenames import FILENAMES
 from Debugger.utils.filehandler import check_if_dir_exists, to_abs_file_path
 
 LOGGER: logging.Logger = logging.getLogger('Debugger')
