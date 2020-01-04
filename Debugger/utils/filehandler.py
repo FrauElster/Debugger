@@ -7,7 +7,7 @@ import os
 import pickle
 import shutil
 from decimal import Decimal
-from typing import List, Any
+from typing import List, Any, Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -119,20 +119,20 @@ def check_if_dir_exists(dirname: str, is_abs: bool = False) -> bool:
     return True
 
 
-def save_file(file_name: str, data: any, is_abs: bool = False, force_pickle: bool = False) -> None:
+def save_file(file_name: str, data: Any, is_abs: bool = False, force_pickle: bool = False) -> None:
     """ writes a file, if a file with file_name already exists its content gets overwritten """
     file_path: str = file_name if is_abs else to_abs_file_path(file_name)
     if not os.path.isfile(file_path):
         LOGGER.info(f'{file_path} created')
     if force_pickle:
-        with open(file_path, 'wb') as file:
-            pickle.dump(obj=data, file=file)
+        with open(file_path, 'wb') as fb:
+            pickle.dump(obj=data, file=fb)
             return
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w') as f:
         if get_file_ending(file_path) == 'json':
-            json.dump(data, file, cls=EnhancedJSONEncoder, )
+            json.dump(data, f, cls=EnhancedJSONEncoder, )
         else:
-            file.write(data)
+            f.write(data)
     LOGGER.info(f'saved {file_name}')
 
 
@@ -145,14 +145,14 @@ def append_to_file(file_name: str, data: Any, is_abs: bool = False, force_pickle
     content = load_file(filename=file_name, is_abs=is_abs, force_pickle=force_pickle)
     if isinstance(content, list):
         if isinstance(data, list):
-            content.extend(data)
+            content.extend(data) # type: ignore
         else:
-            content.append(data)
-    if isinstance(content, str):
-        content += f'\n{data}'
-    if isinstance(content, dict) and isinstance(data, dict):
+            content.append(data) # type: ignore
+    elif isinstance(content, str):
+        content += f'\n{data}' # type: ignore
+    elif isinstance(content, dict) and isinstance(data, dict):
         try:
-            content.update(data)
+            content.update(data) # type: ignore
         except Exception as e:
             LOGGER.warning(f'{e.__class__.__name__} occurred while trying to append to file {file_name}: {e}')
             ok = False
@@ -160,8 +160,8 @@ def append_to_file(file_name: str, data: Any, is_abs: bool = False, force_pickle
     return ok
 
 
-def get_files_in_dir(dirname: str, endings: List[str] = None, recursive: bool = False, is_abs: bool = False) -> List[
-    str]:
+def get_files_in_dir(dirname: str, endings: List[str] = None, recursive: bool = False, is_abs: bool = False) \
+        -> Optional[List[str]]:
     """
     :param dirname: the directory name or path specific to project root
     :param is_abs: determines if the given path is absolute or relative to project root
@@ -183,7 +183,7 @@ def get_files_in_dir(dirname: str, endings: List[str] = None, recursive: bool = 
     return files
 
 
-def load_file(filename: str, is_abs: bool = False, force_pickle: bool = False) -> any:
+def load_file(filename: str, is_abs: bool = False, force_pickle: bool = False) -> Any:
     """
     loads contents of a file. If it is a json file, it tries to parse it.
     :param filename: the path to the file to load
