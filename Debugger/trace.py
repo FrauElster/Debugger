@@ -1,37 +1,11 @@
 import functools
 import inspect
 import sys
+from datetime import datetime
 from typing import Union, Callable, List, Tuple, Any
-from .types import TraceLevel, TraceRecord
+
 from .export import TraceExporter
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Union, Callable, List, Tuple, Any, Dict
-
-
-class TraceLevel(Enum):
-    """
-    Determines in what depth the tracer records
-    """
-    MINIMAL = auto()
-    SOME = auto()
-    ALL = auto()
-
-
-@dataclass
-class TraceRecord:
-    function_name: str
-    arguments: Tuple[Any]
-    keyword_arguments: Dict[str, Any]
-
-
-class TracePersistor:
-    """
-    Collects all informations and does shit with it
-    """
-
-    def persist(self, records: List[TraceRecord]):
-        pass
+from .types import TraceLevel, TraceRecord
 
 
 class trace:
@@ -68,15 +42,25 @@ class trace:
             objects_to_patch = self._get_objects_to_patch()
             self._patch_objects(objects_to_patch)
 
-            record = TraceRecord(func.__name__, args, kwargs)
-            self.records.append(record)
-            result = func(*args, **kwargs)
+            result = self._call_function(func, args, kwargs)
 
             self._unpatch_objects(objects_to_patch)
             self._persist_trace_results()
             return result
 
         return wrapper_func
+
+    def _call_function(self, func, args, kwargs):
+        start_time = datetime.now()
+        record = TraceRecord(func.__name__, args, kwargs, start_time)
+        self.records.append(record)
+
+        result = func(*args, **kwargs)
+
+        end_time = datetime.now()
+        record.end_time = end_time
+
+        return result
 
     def _patch_objects(self, objects: List[Tuple[Any, Any]]) -> None:
         """
@@ -100,9 +84,7 @@ class trace:
 
         @functools.wraps(func)
         def patched_function(*args, **kwargs):
-            record = TraceRecord(func.__name__, args, kwargs)
-            self.records.append(record)
-            return func(*args, **kwargs)
+            return self._call_function(func, args, kwargs)
 
         setattr(module, func.__name__, patched_function)
 
