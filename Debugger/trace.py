@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Union, Callable, List, Tuple, Any
 
 from .export import TraceExporter
-from .types import TraceLevel, TraceRecord
+from .types import TraceLevel, TraceRecord, TimeProvider, SystemTimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,10 +17,11 @@ class trace:
     """
 
     def __init__(self, level: TraceLevel = TraceLevel.ALL, packages: Union[str, list] = None,
-                 exporter: TraceExporter = None):
+                 exporter: TraceExporter = None, time_provider: TimeProvider = None):
         self.level = level
         self.module_names: List[str] = []
         self.exporter = exporter
+        self.time_provider = time_provider if time_provider is not None else SystemTimeProvider()
         self.records: List[TraceRecord] = []
 
         if isinstance(packages, str):
@@ -56,7 +57,7 @@ class trace:
 
         return wrapper_func
 
-    def _call_function(self, func, args, kwargs):
+    def _call_function(self, func: Any, args, kwargs):
         """
         Calls a given function and wraps it within a trace record
         :param func:
@@ -64,13 +65,13 @@ class trace:
         :param kwargs:
         :return:
         """
-        start_time = datetime.now()
+        start_time = self.time_provider.get_current_time()
         record = TraceRecord(func.__name__, args, kwargs, start_time)
         self.records.append(record)
 
         result = func(*args, **kwargs)
 
-        end_time = datetime.now()
+        end_time = self.time_provider.get_current_time()
         record.end_time = end_time
 
         return result

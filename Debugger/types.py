@@ -21,3 +21,13 @@ class TraceRecord:
     keyword_arguments: Dict[str, Any]
     start_time: datetime
     end_time: Optional[datetime] = None
+
+
+class TimeProvider:
+    def get_current_time(self) -> datetime:
+        pass
+
+
+class SystemTimeProvider(TimeProvider):
+    def get_current_time(self) -> datetime:
+        return datetime.now()

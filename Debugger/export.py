@@ -13,6 +13,11 @@ class TraceExporter:
 
 
 class ChromeJsonExporter(TraceExporter):
+    """
+    Exports a recorded trace to json that Google Chromes tracing tool can read.
+    The json format is described here: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit#
+    """
+
     def __init__(self, file_name):
         self.file_name = file_name
 
@@ -21,7 +26,6 @@ class ChromeJsonExporter(TraceExporter):
         begin_time = min(times) if times else datetime.now()
         lines = ["[\n"]
         for record in records:
-            # TODO convert to correct time format
             time_stamp = record.start_time - begin_time
             time_stamp_micros = time_stamp.total_seconds() / 1_000_000
             duration = record.end_time - record.start_time
