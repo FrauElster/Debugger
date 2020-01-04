@@ -152,4 +152,4 @@ class trace:
         """
         if self.exporter is None:
             return
-        self.exporter.persist(self.records)
+        self.exporter.export(self.records)

@@ -8,7 +8,7 @@ class TraceExporter:
     Collects all informations and does shit with it
     """
 
-    def persist(self, records: List[TraceRecord]):
+    def export(self, records: List[TraceRecord]):
         pass
 
 
@@ -22,7 +22,7 @@ class ChromeJsonExporter(TraceExporter):
     def __init__(self, file_name):
         self.file_name = file_name
 
-    def persist(self, records: List[TraceRecord]):
+    def export(self, records: List[TraceRecord]):
         times = list(map(lambda elem: elem.start_time, records))
         begin_time = min(times) if times else datetime.now()
         lines = ["[\n"]

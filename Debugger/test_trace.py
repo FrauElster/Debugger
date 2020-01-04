@@ -9,7 +9,7 @@ class MockExporter(TraceExporter):
     def __init__(self):
         self.records: List[TraceRecord] = []
 
-    def persist(self, records: List[TraceRecord]):
+    def export(self, records: List[TraceRecord]):
         self.records = records
 
 

@@ -7,7 +7,7 @@ from datetime import datetime
 def assert_can_persist_records(expected_lines, records):
     with tempfile.NamedTemporaryFile(suffix=".json") as f:
         exporter = ChromeJsonExporter(f.name)
-        exporter.persist(records)
+        exporter.export(records)
 
         lines = f.readlines()
         assert len(expected_lines) == len(lines)
