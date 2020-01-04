@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from Debugger.trace import trace, TraceExporter, TraceRecord
@@ -12,6 +13,8 @@ class MockExporter(TraceExporter):
 
 
 def test_records_method_call():
+    logger = logging.getLogger(__name__)
+    logger.info("test")
     p = MockExporter()
 
     @trace(exporter=p)

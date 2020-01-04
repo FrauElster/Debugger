@@ -1,11 +1,14 @@
 import functools
 import inspect
+import logging
 import sys
 from datetime import datetime
 from typing import Union, Callable, List, Tuple, Any
 
 from .export import TraceExporter
 from .types import TraceLevel, TraceRecord
+
+LOGGER = logging.getLogger(__name__)
 
 
 class trace:
@@ -35,6 +38,9 @@ class trace:
         """
         # add the module where the function is defined in
         function_module = inspect.getmodule(func)
+        if function_module is None:
+            LOGGER.warning(f'getmodule of {func} returned None')
+            return func
         self.module_names.append(function_module.__name__)
 
         @functools.wraps(func)
@@ -51,6 +57,13 @@ class trace:
         return wrapper_func
 
     def _call_function(self, func, args, kwargs):
+        """
+        Calls a given function and wraps it within a trace record
+        :param func:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         start_time = datetime.now()
         record = TraceRecord(func.__name__, args, kwargs, start_time)
         self.records.append(record)

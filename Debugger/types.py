@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Dict
+from typing import Tuple, Any, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum, auto
 from datetime import datetime
@@ -20,4 +20,4 @@ class TraceRecord:
     arguments: Tuple[Any]
     keyword_arguments: Dict[str, Any]
     start_time: datetime
-    end_time: datetime = None
+    end_time: Optional[datetime] = None
