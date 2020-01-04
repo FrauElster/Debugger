@@ -7,6 +7,9 @@ from typing import Union, Callable, List, Tuple, Any, Dict
 
 
 class TraceLevel(Enum):
+    """
+    Determines in what depth the tracer records
+    """
     MINIMAL = auto()
     SOME = auto()
     ALL = auto()
@@ -20,11 +23,17 @@ class TraceRecord:
 
 
 class TracePersistor:
+    """
+    Collects all informations and does shit with it
+    """
     def persist(self, records: List[TraceRecord]):
         pass
 
 
 class trace:
+    """
+    The actual decorator class
+    """
     def __init__(self, level: TraceLevel = TraceLevel.ALL, packages: Union[str, list] = None,
                  persistor: TracePersistor = None):
         self.level = level
@@ -38,6 +47,13 @@ class trace:
             self.module_names.extend(packages)
 
     def __call__(self, func: Callable, *args, **kwargs):
+        """
+        This method gets executed if the wrapped function is called
+        :param func: the function to wrap
+        :param args: args of the function to wrap
+        :param kwargs: kwargs of the function to wrap
+        :return: the wrapped function
+        """
         # add the module where the function is defined in
         function_module = inspect.getmodule(func)
         self.module_names.append(function_module.__name__)
@@ -57,14 +73,25 @@ class trace:
 
         return wrapper_func
 
-    def _patch_objects(self, objects: List[Tuple[Any, Any]]):
+    def _patch_objects(self, objects: List[Tuple[Any, Any]]) -> None:
+        """
+        Patches any callable to inject tracer behaviour
+        :param objects: List of Tuples with <Module, class / function>
+        :return: None
+        """
         for module, obj in objects:
             if inspect.isclass(obj):
                 continue
             if inspect.isfunction(obj):
                 self._patch_function(func=obj, module=module)
 
-    def _patch_function(self, func: Any, module: Any):
+    def _patch_function(self, func: Any, module: Any) -> None:
+        """
+        Monkey patches a function to inject tracer behaviour
+        :param func: the function to patch
+        :param module: the module the function is implemented in
+        :return: None
+        """
         @functools.wraps(func)
         def patched_function(*args, **kwargs):
             record = TraceRecord(func.__name__, args, kwargs)
@@ -73,17 +100,32 @@ class trace:
 
         setattr(module, func.__name__, patched_function)
 
-    def _unpatch_objects(self, objects):
+    def _unpatch_objects(self, objects: List[Tuple[Any, Any]]) -> None:
+        """
+        sets any object back to its original implementation
+        :param objects: a list of tuples containing <Module, class / function>
+        :return: None
+        """
         for module, obj in objects:
             if inspect.isclass(obj):
                 continue
             if inspect.isfunction(obj):
                 self._unpatch_function(obj, module)
 
-    def _unpatch_function(self, func, module):
+    def _unpatch_function(self, func, module) -> None:
+        """
+        sets a function back to its original behaviour
+        :param func: the function to unpatch
+        :param module: the corresponding module where the default implementation is
+        :return: None
+        """
         setattr(module, func.__name__, func)
 
     def _get_objects_to_patch(self) -> List[Tuple[Any, Any]]:
+        """
+        Filters out every imported module that is listed in self.module_names
+        :return: a List containing tuples with <Module, Class / Function>
+        """
         modules = {mod: val for mod, val in sys.modules.items() if mod in self.module_names}
         result: List[Tuple[Any, Any]] = []
         for importing_module_name in modules:
@@ -93,6 +135,7 @@ class trace:
                 member_data = dict(inspect.getmembers(member))
 
                 if "__module__" not in member_data:
+                    # i m not quiet sure, but i think we did this to ignore built ins
                     continue
 
                 module_name: str = member_data["__module__"]
@@ -100,5 +143,9 @@ class trace:
                     result.append((modules[importing_module_name], member))
         return result
 
-    def _persist_trace_results(self):
+    def _persist_trace_results(self) -> None:
+        """
+        Calls the callback of persistor
+        :return:
+        """
         self.persistor.persist(self.records)
