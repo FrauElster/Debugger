@@ -145,14 +145,14 @@ def append_to_file(file_name: str, data: Any, is_abs: bool = False, force_pickle
     content = load_file(filename=file_name, is_abs=is_abs, force_pickle=force_pickle)
     if isinstance(content, list):
         if isinstance(data, list):
-            content.extend(data) # type: ignore
+            content.extend(data)  # type: ignore
         else:
-            content.append(data) # type: ignore
+            content.append(data)  # type: ignore
     elif isinstance(content, str):
-        content += f'\n{data}' # type: ignore
+        content += f'\n{data}'  # type: ignore
     elif isinstance(content, dict) and isinstance(data, dict):
         try:
-            content.update(data) # type: ignore
+            content.update(data)  # type: ignore
         except Exception as e:
             LOGGER.warning(f'{e.__class__.__name__} occurred while trying to append to file {file_name}: {e}')
             ok = False

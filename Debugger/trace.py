@@ -2,7 +2,6 @@ import functools
 import inspect
 import logging
 import sys
-from datetime import datetime
 from typing import Union, Callable, List, Tuple, Any
 
 from .export import TraceExporter
@@ -126,7 +125,8 @@ class trace:
         modules = {mod: val for mod, val in sys.modules.items() if mod in self.module_names}
         result: List[Tuple[Any, Any]] = []
         for importing_module_name in modules:
-            mod_insp = {name: member for name, member in inspect.getmembers(modules[importing_module_name]) if
+            mod_insp = {name: member for name, member in
+                        inspect.getmembers(modules[importing_module_name]) if
                         not name.startswith("__")}
             for member in mod_insp.values():
                 member_data = dict(inspect.getmembers(member))
@@ -153,4 +153,4 @@ class trace:
         """
         if self.exporter is None:
             return
-        self.exporter.persist(self.records)
+        self.exporter.export(self.records)
