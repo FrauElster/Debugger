@@ -1,4 +1,4 @@
-all: test lint type_check
+all: lint type_check test
 
 test:
 	python -m pytest Debugger
